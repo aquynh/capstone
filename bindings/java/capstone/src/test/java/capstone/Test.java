@@ -1,5 +1,6 @@
 /* Capstone Disassembler Engine */
 /* By Nguyen Anh Quynh <aquynh@gmail.com>, 2013> */
+package capstone;
 
 import capstone.Capstone;
 
