@@ -484,7 +484,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 	bool hasOpSize = false;
 
 	while (isPrefix) {
-		if (insn->mode == MODE_64BIT) {
+		if (insn->mode & MODE_64BIT) {
 			// eliminate consecutive redundant REX bytes in front
 			if (consumeByte(insn, &byte))
 				return -1;
@@ -558,7 +558,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 					 nextByte == 0xc6 || nextByte == 0xc7))
 				insn->xAcquireRelease = true;
 
-			if (insn->mode == MODE_64BIT && (nextByte & 0xf0) == 0x40) {
+			if (insn->mode & MODE_64BIT && (nextByte & 0xf0) == 0x40) {
 				if (consumeByte(insn, &nextByte))
 					return -1;
 				if (lookAtByte(insn, &nextByte))
@@ -674,6 +674,12 @@ static int readPrefixes(struct InternalInstruction *insn)
 		//if (isPrefix)
 		//	dbgprintf(insn, "Found prefix 0x%hhx", byte);
 	}
+	
+	if(insn->mode == MODE_64BIT && (byte == 0xE9 || byte == 0xE8)){
+		hasOpSize = false;
+		insn->prefix2 = 0;
+		insn->isPrefix66 = false;
+	}
 
 	insn->vectorExtensionType = TYPE_NO_VEX_XOP;
 
@@ -686,7 +692,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 			return -1;
 		}
 
-		if ((insn->mode == MODE_64BIT || (byte1 & 0xc0) == 0xc0) &&
+		if ((insn->mode & MODE_64BIT || (byte1 & 0xc0) == 0xc0) &&
 				((~byte1 & 0xc) == 0xc)) {
 			if (lookAtByte(insn, &byte2)) {
 				//dbgprintf(insn, "Couldn't read third byte of EVEX prefix");
@@ -716,7 +722,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 				}
 
 				/* We simulate the REX prefix for simplicity's sake */
-				if (insn->mode == MODE_64BIT) {
+				if (insn->mode & MODE_64BIT) {
 					insn->rexPrefix = 0x40
 						| (wFromEVEX3of4(insn->vectorExtensionPrefix[2]) << 3)
 						| (rFromEVEX2of4(insn->vectorExtensionPrefix[1]) << 2)
@@ -747,7 +753,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 			return -1;
 		}
 
-		if (insn->mode == MODE_64BIT || (byte1 & 0xc0) == 0xc0) {
+		if (insn->mode & MODE_64BIT || (byte1 & 0xc0) == 0xc0) {
 			insn->vectorExtensionType = TYPE_VEX_3B;
 			insn->necessaryPrefixLocation = insn->readerCursor - 1;
 		} else {
@@ -763,7 +769,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 				return -1;
 
 			/* We simulate the REX prefix for simplicity's sake */
-			if (insn->mode == MODE_64BIT) {
+			if (insn->mode & MODE_64BIT) {
 				insn->rexPrefix = 0x40
 					| (wFromVEX3of3(insn->vectorExtensionPrefix[2]) << 3)
 					| (rFromVEX2of3(insn->vectorExtensionPrefix[1]) << 2)
@@ -787,7 +793,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 			return -1;
 		}
 
-		if (insn->mode == MODE_64BIT || (byte1 & 0xc0) == 0xc0) {
+		if (insn->mode & MODE_64BIT || (byte1 & 0xc0) == 0xc0) {
 			insn->vectorExtensionType = TYPE_VEX_2B;
 		} else {
 			unconsumeByte(insn);
@@ -798,7 +804,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 			if (consumeByte(insn, &insn->vectorExtensionPrefix[1]))
 				return -1;
 
-			if (insn->mode == MODE_64BIT) {
+			if (insn->mode & MODE_64BIT) {
 				insn->rexPrefix = 0x40
 					| (rFromVEX2of2(insn->vectorExtensionPrefix[1]) << 2);
 			}
@@ -835,7 +841,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 				return -1;
 
 			/* We simulate the REX prefix for simplicity's sake */
-			if (insn->mode == MODE_64BIT) {
+			if (insn->mode & MODE_64BIT) {
 				insn->rexPrefix = 0x40
 					| (wFromXOP3of3(insn->vectorExtensionPrefix[2]) << 3)
 					| (rFromXOP2of3(insn->vectorExtensionPrefix[1]) << 2)
@@ -852,7 +858,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 			}
 		}
 	} else {
-		if (insn->mode == MODE_64BIT) {
+		if (insn->mode & MODE_64BIT) {
 			if ((byte & 0xf0) == 0x40) {
 				uint8_t opcodeByte;
 
@@ -892,7 +898,7 @@ static int readPrefixes(struct InternalInstruction *insn)
 		insn->displacementSize   = (hasAdSize ? 2 : 4);
 		insn->immediateSize      = (hasOpSize ? 2 : 4);
 		insn->immSize = (hasOpSize ? 2 : 4);
-	} else if (insn->mode == MODE_64BIT) {
+	} else if (insn->mode & MODE_64BIT) {
 		if (insn->rexPrefix && wFromREX(insn->rexPrefix)) {
 			insn->registerSize       = 8;
 			insn->addressSize        = (hasAdSize ? 4 : 8);
@@ -1169,7 +1175,7 @@ static int getID(struct InternalInstruction *insn)
 	// printf(">>> getID()\n");
 	attrMask = ATTR_NONE;
 
-	if (insn->mode == MODE_64BIT)
+	if (insn->mode & MODE_64BIT)
 		attrMask |= ATTR_64BIT;
 
 	if (insn->vectorExtensionType != TYPE_NO_VEX_XOP) {
@@ -1263,17 +1269,7 @@ static int getID(struct InternalInstruction *insn)
 
 	if (getIDWithAttrMask(&instructionID, insn, attrMask))
 		return -1;
-
-	/* Fixing CALL and JMP instruction when in 64bit mode and x66 prefix is used */
-	if (insn->mode == MODE_64BIT && insn->isPrefix66 &&
-	   (insn->opcode == 0xE8 || insn->opcode == 0xE9))
-	{
-		attrMask ^= ATTR_OPSIZE;
-		if (getIDWithAttrMask(&instructionID, insn, attrMask))
-			return -1;
-	}
-
-
+	
 	/*
 	 * JCXZ/JECXZ need special handling for 16-bit mode because the meaning
 	 * of the AdSize prefix is inverted w.r.t. 32-bit mode.
@@ -1982,7 +1978,7 @@ static int readVVVV(struct InternalInstruction *insn)
 	else
 		return -1;
 
-	if (insn->mode != MODE_64BIT)
+	if (!(insn->mode & MODE_64BIT))
 		vvvv &= 0x7;
 
 	insn->vvvv = vvvv;
