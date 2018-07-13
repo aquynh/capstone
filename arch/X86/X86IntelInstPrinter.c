@@ -47,7 +47,7 @@
 #include "X86BaseInfo.h"
 
 static void printMemReference(MCInst *MI, unsigned Op, SStream *O);
-static void printOperand(MCInst *MI, unsigned OpNo, SStream *O);
+void X86_Intel_printOperand(MCInst *MI, unsigned OpNo, SStream *O);
 
 
 static void set_mem_access(MCInst *MI, bool status)
@@ -591,7 +591,7 @@ static void printImm(int syntax, SStream *O, int64_t imm, bool positive)
 	}
 }
 
-static void printOperand(MCInst *MI, unsigned OpNo, SStream *O)
+void X86_Intel_printOperand(MCInst *MI, unsigned OpNo, SStream *O)
 {
 	MCOperand *Op  = MCInst_getOperand(MI, OpNo);
 
