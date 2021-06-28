@@ -434,3 +434,14 @@
 !# CS_ARCH_ARM64, CS_MODE_LITTLE_ENDIAN, None
 0x0: 0x00,0x00,0x00,0x4c == st4 {v0.16b, v1.16b, v2.16b, v3.16b}, [x0]
 
+!# issue 1527
+!# CS_ARCH_PPC, CS_MODE_BIG_ENDIAN, None
+0x0: 0x42,0x9f,0x00,0x05 == bcl 0x14, 31, 0x4
+
+!# issue 1528
+!# CS_ARCH_PPC, CS_MODE_BIG_ENDIAN, None
+0x0: 0x38,0x43,0x80,0x00 == add r2, r3, -0x8000
+
+!# issue 664
+!# CS_ARCH_X86, CS_MODE_LITTLE_ENDIAN, None
+0x0: 0xf3,0xc3 == rep ret
