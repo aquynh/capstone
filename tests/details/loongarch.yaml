@@ -165,3 +165,49 @@ test_cases:
                 type: LOONGARCH_OP_IMM
                 imm: 0x1bf0
           groups: [ LOONGARCH_GRP_CALL ]
+  -
+    input:
+      bytes: [ 0x1a, 0xae, 0x45, 0x33, 0x81, 0xf4, 0x97, 0x31 ]
+      arch: "loongarch"
+      options: [ CS_OPT_DETAIL, CS_MODE_LOONGARCH64 ]
+      address: 0x1000
+    expected:
+      insns:
+      -
+        asm_text: "xvstelm.h	$xr26, $t4, 0xd6, 1"
+        details:
+          loongarch:
+            operands:
+              -
+                type: LOONGARCH_OP_REG
+                reg: xr26
+                access: CS_AC_READ
+              -
+                type: LOONGARCH_OP_MEM
+                mem_base: t4
+                mem_disp: 0xd6
+                access: CS_AC_WRITE
+              -
+                type: LOONGARCH_OP_IMM
+                imm: 0x1
+                access: CS_AC_READ
+          regs_read: [ xr26, t4 ]
+      -
+        asm_text: "vstelm.b	$vr1, $a0, -3, 5"
+        details:
+          loongarch:
+            operands:
+              -
+                type: LOONGARCH_OP_REG
+                reg: vr1
+                access: CS_AC_READ
+              -
+                type: LOONGARCH_OP_MEM
+                mem_base: a0
+                mem_disp: -3
+                access: CS_AC_WRITE
+              -
+                type: LOONGARCH_OP_IMM
+                imm: 0x5
+                access: CS_AC_READ
+          regs_read: [ vr1, a0 ]

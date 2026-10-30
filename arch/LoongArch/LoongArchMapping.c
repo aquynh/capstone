@@ -264,18 +264,10 @@ void LoongArch_rewrite_memory_operand(MCInst *MI)
 	case LOONGARCH_INSN_FORM_FMT2RI10_VRI: // vldrepl.w
 	case LOONGARCH_INSN_FORM_FMT2RI11_VRI: // vldrepl.h
 	case LOONGARCH_INSN_FORM_FMT2RI12_VRI: // vld, vldrepl, vst
-	case LOONGARCH_INSN_FORM_FMT2RI8I1_VRII: // vstelm.d
-	case LOONGARCH_INSN_FORM_FMT2RI8I2_VRII: // vstelm.w
-	case LOONGARCH_INSN_FORM_FMT2RI8I3_VRII: // vstelm.h
-	case LOONGARCH_INSN_FORM_FMT2RI8I4_VRII: // vstelm.b
 	case LOONGARCH_INSN_FORM_FMT2RI9_XRI: // xvldrepl.d
 	case LOONGARCH_INSN_FORM_FMT2RI10_XRI: // xvldrepl.w
 	case LOONGARCH_INSN_FORM_FMT2RI11_XRI: // xvldrepl.h
 	case LOONGARCH_INSN_FORM_FMT2RI12_XRI: // xvld, xvldrepl, xvst
-	case LOONGARCH_INSN_FORM_FMT2RI8I2_XRII: // xvstelm.d
-	case LOONGARCH_INSN_FORM_FMT2RI8I3_XRII: // xvstelm.w
-	case LOONGARCH_INSN_FORM_FMT2RI8I4_XRII: // xvstelm.h
-	case LOONGARCH_INSN_FORM_FMT2RI8I5_XRII: // xvstelm.b
 	case LOONGARCH_INSN_FORM_FMTPRELD: // preld
 	case LOONGARCH_INSN_FORM_FPFMT2RI12: // fld, fst
 		// immediate offset
@@ -286,6 +278,27 @@ void LoongArch_rewrite_memory_operand(MCInst *MI)
 			LoongArch_get_detail_op(MI, -1)->imm;
 		LoongArch_get_detail_op(MI, -2)->access =
 			suppl_info->memory_access;
+		LoongArch_dec_op_count(MI);
+		break;
+
+	case LOONGARCH_INSN_FORM_FMT2RI8I1_VRII: // vstelm.d
+	case LOONGARCH_INSN_FORM_FMT2RI8I2_VRII: // vstelm.w
+	case LOONGARCH_INSN_FORM_FMT2RI8I3_VRII: // vstelm.h
+	case LOONGARCH_INSN_FORM_FMT2RI8I4_VRII: // vstelm.b
+	case LOONGARCH_INSN_FORM_FMT2RI8I2_XRII: // xvstelm.d
+	case LOONGARCH_INSN_FORM_FMT2RI8I3_XRII: // xvstelm.w
+	case LOONGARCH_INSN_FORM_FMT2RI8I4_XRII: // xvstelm.h
+	case LOONGARCH_INSN_FORM_FMT2RI8I5_XRII: // xvstelm.b
+		// immediate offset followed by the element index
+		LoongArch_get_detail_op(MI, -3)->type = LOONGARCH_OP_MEM;
+		base = LoongArch_get_detail_op(MI, -3)->reg;
+		LoongArch_get_detail_op(MI, -3)->mem.base = base;
+		LoongArch_get_detail_op(MI, -3)->mem.disp =
+			LoongArch_get_detail_op(MI, -2)->imm;
+		LoongArch_get_detail_op(MI, -3)->access =
+			suppl_info->memory_access;
+		*LoongArch_get_detail_op(MI, -2) =
+			*LoongArch_get_detail_op(MI, -1);
 		LoongArch_dec_op_count(MI);
 		break;
 
