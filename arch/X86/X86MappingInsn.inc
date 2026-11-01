@@ -3079,7 +3079,7 @@
 {
 	X86_CMOVNB_F, X86_INS_FCMOVNB, 0,
 #ifndef CAPSTONE_DIET
-	{ 0 }, { X86_REG_FPSW, 0 }, { X86_GRP_CMOV, 0 }, 0, 0
+	{ 0 }, { X86_REG_FPSW, 0 }, { X86_GRP_CMOV, X86_GRP_FPU, 0 }, 0, 0
 #endif
 },
 
