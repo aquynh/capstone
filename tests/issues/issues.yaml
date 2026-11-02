@@ -1,6 +1,26 @@
 test_cases:
   -
     input:
+      name: "issue 1694: x87 conditional move groups"
+      bytes: [ 0xdb, 0xc1, 0xdb, 0xd2, 0x0f, 0x43, 0xc3 ]
+      arch: "CS_ARCH_X86"
+      options: [ CS_MODE_64, CS_OPT_DETAIL ]
+    expected:
+      insns:
+      -
+        asm_text: "fcmovnb st(0), st(1)"
+        details:
+          groups: [ cmov, fpu ]
+      -
+        asm_text: "fcmovnbe st(0), st(2)"
+        details:
+          groups: [ cmov, fpu ]
+      -
+        asm_text: "cmovae eax, ebx"
+        details:
+          groups: [ cmov ]
+  -
+    input:
       name: "issue 2613 mandatory prefix displacement size"
       bytes: [ 0x66, 0x0f, 0x6f, 0x05, 0xdc, 0xa7, 0x01, 0x00 ]
       arch: "CS_ARCH_X86"
