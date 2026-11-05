@@ -1358,6 +1358,20 @@ void X86_get_insn_id(cs_struct *h, cs_insn *insn, unsigned int id)
 			insn->detail->groups_count =
 				(uint8_t)count_positive8(insns[i].groups);
 
+			if (insn->id == X86_INS_RETF) {
+				if (mode == CS_MODE_64) {
+					insn->detail->regs_read[0] =
+						X86_REG_RSP;
+					insn->detail->regs_write[0] =
+						X86_REG_RSP;
+					insn->detail->regs_write[1] =
+						X86_REG_RIP;
+				}
+				// 16/32-bit far returns are valid in all modes.
+				insn->detail->groups[0] = X86_GRP_RET;
+				insn->detail->groups_count = 1;
+			}
+
 			if (insns[i].branch || insns[i].indirect_branch) {
 				// this insn also belongs to JUMP group. add JUMP group
 				insn->detail
